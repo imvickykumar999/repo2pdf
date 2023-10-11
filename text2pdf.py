@@ -1,23 +1,15 @@
-# pip install fpdf
 
-def pdf_border(pdf_path = 'encrypt.pdf'):
-    import io
-    from reportlab.pdf import PdfWriter
-    writer = PdfWriter(io.BytesIO())
-    page = writer.getPage()
+import os
+from urllib.parse import urlparse
 
-    rectangle = page.drawRectangle(10, 10, 100, 100)
-    rectangle.setStrokeColor(0, 0, 0)
-    final = f'{pdf_path.split(".")[0]}.pdf'
-    writer.save(final)
-    return final
+from fpdf import FPDF
+from PyPDF2 import PdfMerger, PdfReader
 
 def convert(pdf_path = 'myfile.txt'):
-    from fpdf import FPDF
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size = 15)
-    f = open(pdf_path, "r")
+    f = open(pdf_path, "r", encoding="unicode_escape")
 
     for x in f:
         pdf.cell(200, 10, txt = x, ln = 1)
@@ -26,12 +18,25 @@ def convert(pdf_path = 'myfile.txt'):
     pdf.output(final)
     return final
 
-# convert('encrypt.py')
-# pdf_border('encrypt.pdf')
+def clone_repo(repo):
+    try:
+        os.system(f'git clone {repo}')
+    except Exception as e:
+        print(e)
 
-from PyPDF2 import PdfMerger, PdfReader
+repo = 'https://github.com/imvickykumar999/sqlzoo-solutions'
+clone_repo(repo)
+
 merger = PdfMerger()
+a = urlparse(repo)
+folder = os.path.basename(a.path)
 
-merger.append(PdfReader(open(convert('encrypt.py'), 'rb')))
-merger.append(PdfReader(open(convert('README.md'), 'rb')))
+exclude = set(['.git'])
+for root, dirs, files in os.walk(folder, topdown=True):
+    dirs[:] = [d for d in dirs if d not in exclude]
+
+    for name in files:
+        file = os.path.join(root, name)
+        merger.append(PdfReader(open(convert(file), 'rb')))
+
 merger.write("merged.pdf")
