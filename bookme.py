@@ -6,7 +6,7 @@ from git import Repo
 from urllib.parse import urlparse
 
 from fpdf import FPDF
-from PyPDF2 import PdfMerger, PdfReader
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 
 try: os.mkdir('output')
 except: pass
@@ -55,5 +55,22 @@ for root, dirs, files in os.walk(os_folder, topdown=True):
         except:
             pass
 
-output = f"output/{folder}.pdf"
+try: os.mkdir(f"output/{folder}")
+except: pass
+
+output = f"output/{folder}/{folder}.pdf"
 merger.write(output)
+
+reader = PdfReader(output)
+writer = PdfWriter()
+writer.append_pages_from_reader(reader)
+
+password = input('\nEnter password to encrypt : ')
+if password == '':
+    password = 'password'
+
+writer.encrypt(password)
+output = f"output/{folder}/{folder}_{password}.pdf"
+
+with open(output, "wb") as out_file:
+    writer.write(out_file)
