@@ -19,13 +19,12 @@ except: pass
 try: os.mkdir('input')
 except: pass
 
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Arial", size = 12)
 
 def convert(pdf_path = 'myfile.txt'):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size = 10)
     f = open(pdf_path, "r", encoding="unicode_escape")
-
     for x in f:
         pdf.cell(200, 10, txt = x, ln = 1)
 
@@ -73,7 +72,7 @@ for root, dirs, files in os.walk(os_folder, topdown=True):
             if ext.split(".")[1].lower() != 'pdf':
                 file = convert(file)
 
-            # print('======>', file)
+            print('======>', file)
             pdf = open(file, 'rb')
             merger.append(PdfReader(pdf))
         except:
