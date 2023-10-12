@@ -1,18 +1,24 @@
 
-# pip install gitpython fpdf
+# pip install gitpython fpdf img2pdf
 
 import os
 from git import Repo
 from urllib.parse import urlparse
 
+import img2pdf
 from fpdf import FPDF
-from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+from PyPDF2 import (
+    PdfMerger, 
+    PdfReader, 
+    PdfWriter
+)
 
 try: os.mkdir('output')
 except: pass
 
 try: os.mkdir('input')
 except: pass
+
 
 def convert(pdf_path = 'myfile.txt'):
     pdf = FPDF()
@@ -27,10 +33,15 @@ def convert(pdf_path = 'myfile.txt'):
     pdf.output(final)
     return final
 
+
 def clone_repo(repo, folder):
     os_folder = os.path.join('input', folder)
-    try: Repo.clone_from(repo, os_folder)
-    except Exception as e: print(e)
+
+    try: 
+        Repo.clone_from(repo, os_folder)
+    except Exception as e: 
+        print(e)
+
 
 repo = input('\nEnter repo link : ')
 if repo == '':
@@ -43,20 +54,36 @@ folder = os.path.basename(a.path)
 clone_repo(repo, folder)
 os_folder = os.path.join('input', folder)
 
+
 exclude = set(['.git'])
 for root, dirs, files in os.walk(os_folder, topdown=True):
     dirs[:] = [d for d in dirs if d not in exclude]
 
     for name in files:
         file = os.path.join(root, name)
+        ext = os.path.basename(file)
+        # print('\n======>', file)
+
         try:
-            pdf = open(convert(file), 'rb')
+            if ext.split(".")[1].lower() in ['png', 'jpg', 'jpeg']:
+                with open(file + '.pdf', "wb") as f:
+                    f.write(img2pdf.convert([file]))
+                file += '.pdf'
+
+            if ext.split(".")[1].lower() != 'pdf':
+                file = convert(file)
+
+            # print('======>', file)
+            pdf = open(file, 'rb')
             merger.append(PdfReader(pdf))
         except:
             pass
 
-try: os.mkdir(f"output/{folder}")
-except: pass
+try: 
+    os.mkdir(f"output/{folder}")
+except: 
+    pass
+
 
 output = f"output/{folder}/{folder}.pdf"
 merger.write(output)
@@ -64,6 +91,7 @@ merger.write(output)
 reader = PdfReader(output)
 writer = PdfWriter()
 writer.append_pages_from_reader(reader)
+
 
 password = input('\nEnter password to encrypt : ')
 if password == '':
